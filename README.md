@@ -1,10 +1,16 @@
-# <project-name>
+# gha-trivy-docker-image-scan
 
-<!-- A brief description of the project. -->
+GitHub Action to scan Docker Images for vulnerabilities using containerized [Trivy](https://trivy.dev/).
 
 ## Usage
 
-<!-- Provide instructions on how to use the project, including code examples if applicable. -->
+```yaml
+steps:
+  - name: Scan Docker Image for Vulnerabilities
+    uses: albr21/gha-trivy-docker-image-scan@v1
+    with:
+
+```
 
 ## Contributing
 
