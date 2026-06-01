@@ -1,0 +1,122 @@
+name: gha-trivy-docker-image-scan
+
+description: |-
+  GitHub Action to scan Docker Images with containerized Trivy.
+
+inputs:
+  image-name:
+    description: |-
+      Docker Image name to scan
+    required: true
+  image-tag:
+    description: |-
+      Docker Image tag to scan
+    required: false
+    default: latest
+  output-directory:
+    description: |-
+      Output directory to save the trivy scan results
+    required: false
+    default: /tmp/trivy/
+  output-filename:
+    description: |-
+      Output filename to save the trivy scan results
+    required: false
+    default: results.txt
+  docker-registry:
+    description: |-
+      Docker Registry to login on to pull the image to scan
+    required: true
+  docker-username:
+    description: |-
+      Username to login on the docker registry
+    required: true
+    default: ${{ github.actor }}
+  docker-password:
+    description: |-
+      Password to login on the docker registry
+    required: true
+    default: ${{ github.token }}
+  docker-sock:
+    description: |-
+      Path to docker.sock to run the trivy container with the docker socket mounted
+    required: false
+    default: /var/run/docker.sock
+  trivy-docker-image-name:
+    description: |-
+      Trivy docker image name to use for the scan.
+      By default, it uses official docker image.
+    required: false
+    default: aquasec/trivy
+  trivy-docker-image-tag:
+    description: |-
+      Trivy docker image tag to use for the scan
+    required: false
+    default: 0.67.2
+  trivy-scan-severity:
+    description: |-
+      Trivy scan severity level.
+      Enable values: CRITICAL, HIGH, MEDIUM, LOW, UNKNOWN.
+      By default, it uses `HIGH`, but can be changed to other severity level if needed.
+    required: false
+    default: HIGH
+  fail-on-vulnerability:
+    description: |-
+      Fail the workflow when the Scan find a vulnerability at the trivy scan severity selected.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Validate Inputs
+      uses: albr21/gha-type-guard@1.0.0
+      with:
+        payload: |
+          [
+            {"value": "${{ inputs.image-name }}", "type": "string"},
+            {"value": "${{ inputs.image-tag }}", "type": "string"},
+            {"value": "${{ inputs.output-directory }}", "type": "string"},
+            {"value": "${{ inputs.output-filename }}", "type": "string"},
+            {"value": "${{ inputs.docker-registry }}", "type": "string"},
+            {"value": "${{ inputs.docker-username }}", "type": "string"},
+            {"value": "${{ inputs.docker-password }}", "type": "string"},
+            {"value": "${{ inputs.docker-sock }}", "type": "string"},
+            {"value": "${{ inputs.trivy-docker-image-name }}", "type": "string"},
+            {"value": "${{ inputs.trivy-docker-image-tag }}", "type": "string"},
+            {"value": "${{ inputs.trivy-scan-severity }}", "type": "enum", "enumValues": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]},
+            {"value": "${{ inputs.fail-on-vulnerability }}", "type": "boolean"}
+          ]
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v4.2.0
+      with:
+        registry: ${{ inputs.docker-registry }}
+        username: ${{ inputs.docker-username }}
+        password: ${{ inputs.docker-password }}
+
+    - name: Set GITHUB_ACTION_PATH variable
+      run: echo "GITHUB_ACTION_PATH=${GITHUB_ACTION_PATH}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Run Trivy Scan
+      id: scan
+      run: |-
+        bash ${{ env.GITHUB_ACTION_PATH}}/scripts/scan.sh \
+          --image-name ${{ inputs.image-name }} \
+          --image-tag ${{ inputs.image-tag }} \
+          --scan-severity ${{ inputs.trivy-scan-severity }} \
+          --fail-on-vulnerability ${{ inputs.fail-on-vulnerability }} \
+          --docker-sock ${{ inputs.docker-sock }} \
+          --output-directory ${{ inputs.output-directory }} \
+          --output-filename ${{ inputs.output-filename }} \
+          --trivy-docker-image-name ${{ inputs.trivy-docker-image-name }} \
+          --trivy-docker-image-tag ${{ inputs.trivy-docker-image-tag }}
+      shell: bash
+
+    - name: Trivy Scan Result
+      if: always()
+      run: |-
+        bash ${{ env.GITHUB_ACTION_PATH}}/scripts/summary.sh \
+          --results-path ${{ inputs.output-directory }}/${{ inputs.output-filename }}
+      shell: bash
