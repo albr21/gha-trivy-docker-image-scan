@@ -17,7 +17,7 @@ inputs:
     description: |-
       Output directory to save the trivy scan results
     required: false
-    default: /tmp/trivy/
+    default: /tmp/trivy
   output-filename:
     description: |-
       Output filename to save the trivy scan results
@@ -103,6 +103,7 @@ runs:
       id: scan
       run: |-
         bash ${{ env.GITHUB_ACTION_PATH}}/scripts/scan.sh \
+          --docker-registry ${{ inputs.docker-registry }} \
           --image-name ${{ inputs.image-name }} \
           --image-tag ${{ inputs.image-tag }} \
           --scan-severity ${{ inputs.trivy-scan-severity }} \

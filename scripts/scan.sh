@@ -1,4 +1,5 @@
 # === Default Variables ===
+DOCKER_REGISTRY=""
 IMAGE_NAME=""
 IMAGE_TAG="latest"
 OUTPUT_DIRECTORY="/tmp/trivy/"
@@ -17,6 +18,7 @@ set -e
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --docker-registry) DOCKER_REGISTRY="$2"; shift 2 ;;
     --image-name) IMAGE_NAME="$2"; shift 2 ;;
     --image-tag) IMAGE_TAG="${2:-$IMAGE_TAG}"; shift 2 ;;
     --scan-severity) SCAN_SEVERITY="${2:-$SCAN_SEVERITY}"; shift 2 ;;
@@ -31,8 +33,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 # === Validate Arguments ===
-if [ -z "$IMAGE_NAME" ]; then
-  echo "::error::Usage: $0 --image-name <image_name> [--image-tag <image_tag>] [--scan-severity <scan_severity>] [--fail-on-vulnerability <fail_on_vulnerability>] [--docker-sock <docker_sock_path>] [--output-directory <OUTPUT_DIRECTORY>] [--output-filename <output_filename>]"
+if [ -z "$IMAGE_NAME" ] || [ -z "$DOCKER_REGISTRY" ]; then
+  echo "::error::Usage: $0 --docker-registry <docker_registry> --image-name <image_name> [--image-tag <image_tag>] [--scan-severity <scan_severity>] [--fail-on-vulnerability <fail_on_vulnerability>] [--docker-sock <docker_sock_path>] [--output-directory <OUTPUT_DIRECTORY>] [--output-filename <output_filename>]"
   exit 1
 fi
 
@@ -43,7 +45,7 @@ docker pull "$TRIVY_IMAGE"
 echo "✅ Trivy image $TRIVY_IMAGE pulled successfully!"
 
 # === Pull the Docker Image to Scan ===
-IMAGE="$IMAGE_NAME:$IMAGE_TAG"
+IMAGE="$DOCKER_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
 echo "🔧 Pulling image $IMAGE..."
 docker pull "$IMAGE"
 echo "✅ Image $IMAGE pulled successfully!"
