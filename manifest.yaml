@@ -1,6 +1,6 @@
 name: gha-trivy-docker-image-scan
 description: |-
-  GitHub Action to scan Docker Image for vulnerabilities using containerized Trivy
+  GitHub Action to scan Docker Images for vulnerabilities using containerized Trivy
 version: 1.0.0
 releases:
   - version: 1.0.0
