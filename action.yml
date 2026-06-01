@@ -61,6 +61,11 @@ inputs:
       By default, it uses `HIGH`, but can be changed to other severity level if needed.
     required: false
     default: HIGH
+  trivy-skip-db-update:
+    description: |-
+      Skip trivy database update.
+    required: false
+    default: "false"
   fail-on-vulnerability:
     description: |-
       Fail the workflow when the Scan find a vulnerability at the trivy scan severity selected.
@@ -86,6 +91,7 @@ runs:
             {"value": "${{ inputs.trivy-docker-image-name }}", "type": "string"},
             {"value": "${{ inputs.trivy-docker-image-tag }}", "type": "string"},
             {"value": "${{ inputs.trivy-scan-severity }}", "type": "enum", "enumValues": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]},
+            {"value": "${{ inputs.trivy-skip-db-update }}", "type": "boolean"},
             {"value": "${{ inputs.fail-on-vulnerability }}", "type": "boolean"}
           ]
 
@@ -113,7 +119,8 @@ runs:
           --output-directory ${{ inputs.output-directory }} \
           --output-filename ${{ inputs.output-filename }} \
           --trivy-docker-image-name ${{ inputs.trivy-docker-image-name }} \
-          --trivy-docker-image-tag ${{ inputs.trivy-docker-image-tag }}
+          --trivy-docker-image-tag ${{ inputs.trivy-docker-image-tag }} \
+          --skip-db-update ${{ inputs.trivy-skip-db-update }}
       shell: bash
 
     - name: Trivy Scan Result
