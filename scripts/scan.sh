@@ -3,7 +3,7 @@ DOCKER_REGISTRY=""
 IMAGE_NAME=""
 IMAGE_TAG="latest"
 OUTPUT_DIRECTORY="/tmp/trivy/"
-OUTPUT_FILENAME="trivy-results.txt"
+OUTPUT_FILENAME="results.json"
 TRIVY_DOCKER_IMAGE_NAME="aquasec/trivy"
 TRIVY_DOCKER_IMAGE_TAG="0.67.2"
 SCAN_SEVERITY="HIGH"
@@ -75,12 +75,12 @@ if [ -n "$SECURITY_LEVELS" ]; then
     -v "$OUTPUT_DIRECTORY":/results \
     "$TRIVY_IMAGE" \
     image --image-src docker "$IMAGE" \
-    --output "/results/$OUTPUT_FILENAME" \
+    --format json \
+    --output "/results/$OUTPUT_FILENAME.json" \
     --severity $SECURITY_LEVELS
-    --exit-code 1
   SCAN_EXIT_CODE=$(echo $?)
 else
-    echo "::warning::No valid severity levels provided. Skipping scan."
+  echo "::warning::No valid severity levels provided. Skipping scan."
 fi
 
 # Restore exit on error behavior

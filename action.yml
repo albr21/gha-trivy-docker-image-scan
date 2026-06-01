@@ -20,9 +20,10 @@ inputs:
     default: /tmp/trivy
   output-filename:
     description: |-
-      Output filename to save the trivy scan results
+      Output filname to save the trivy scan results (no extension).
+      If extension is provided, '.json' will be appended.
     required: false
-    default: results.txt
+    default: results
   docker-registry:
     description: |-
       Docker Registry to login on to pull the image to scan
@@ -119,5 +120,6 @@ runs:
       if: always()
       run: |-
         bash ${{ env.GITHUB_ACTION_PATH}}/scripts/summary.sh \
-          --results-path ${{ inputs.output-directory }}/${{ inputs.output-filename }}
+          --docker-image ${{ inputs.docker-registry }}/${{ inputs.image-name }}:${{ inputs.image-tag }} \
+          --results-path ${{ inputs.output-directory }}/${{ inputs.output-filename }}.json
       shell: bash
