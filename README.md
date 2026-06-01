@@ -7,7 +7,7 @@ GitHub Action to scan Docker Images for vulnerabilities using containerized [Tri
 ```yaml
 steps:
   - name: Scan Docker Image for Vulnerabilities
-    uses: albr21/gha-trivy-docker-image-scan@v1.0.0
+    uses: albr21/gha-trivy-docker-image-scan@1.0.0
     with:
       image-name: <image_name>
       image-tag: <image_tag>
@@ -20,6 +20,7 @@ steps:
       trivy-docker-image-name: <trivy_docker_image_name>
       trivy-docker-image-tag: <trivy_docker_image_tag>
       trivy-scan-severity: <trivy_scan_severity>
+      trivy-skip-db-update: <trivy_skip_db_update>
       fail-on-vulnerability: <fail_on_vulnerability>
 ```
 
